@@ -1,0 +1,8 @@
+<Security s:mustUnderstand="1" xmlns="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
+<UsernameToken>
+<Username>admin</Username>
+<Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordDigest">wRHUFc1slwB8LaMm7QJnLaiD4cI=</Password>
+<Nonce EncodingType="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary">aN6VJLJZfkCkkjpXT6GbX1UAAAAAAA==</Nonce>
+<Created xmlns="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">2015-05-13T13:44:47.631Z</Created>
+</UsernameToken>
+</Security>
