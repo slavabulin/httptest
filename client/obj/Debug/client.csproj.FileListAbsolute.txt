@@ -1,0 +1,12 @@
+d:\work\Onvif\prog\WF_WCF_Samples\WCF\Basic\Binding\Basic\Http\CS\client\bin\client.exe.config
+d:\work\Onvif\prog\WF_WCF_Samples\WCF\Basic\Binding\Basic\Http\CS\client\bin\client.exe
+d:\work\Onvif\prog\WF_WCF_Samples\WCF\Basic\Binding\Basic\Http\CS\client\bin\client.pdb
+d:\work\Onvif\prog\WF_WCF_Samples\WCF\Basic\Binding\Basic\Http\CS\client\obj\Debug\ResolveAssemblyReference.cache
+d:\work\Onvif\prog\WF_WCF_Samples\WCF\Basic\Binding\Basic\Http\CS\client\obj\Debug\client.exe
+d:\work\Onvif\prog\WF_WCF_Samples\WCF\Basic\Binding\Basic\Http\CS\client\obj\Debug\client.pdb
+d:\work\Onvif\prog\Http\CS\client\bin\client.exe.config
+d:\work\Onvif\prog\Http\CS\client\bin\client.exe
+d:\work\Onvif\prog\Http\CS\client\bin\client.pdb
+d:\work\Onvif\prog\Http\CS\client\obj\Debug\ResolveAssemblyReference.cache
+d:\work\Onvif\prog\Http\CS\client\obj\Debug\client.exe
+d:\work\Onvif\prog\Http\CS\client\obj\Debug\client.pdb

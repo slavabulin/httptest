@@ -1,4 +1,4 @@
-//----------------------------------------------------------------
+﻿//----------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //----------------------------------------------------------------
 
@@ -15,9 +15,14 @@ namespace Microsoft.Samples.Http
         static void Main()
         {
             // Create a client with given client endpoint configuration
-            WSHttpBinding wsbinding = new WSHttpBinding(SecurityMode.None);
-            CalculatorClient client = new CalculatorClient(wsbinding, new EndpointAddress("http://192.168.1.170:80/onvif/device_service"));
+            WSHttpBinding wsbinding = new WSHttpBinding();
+            wsbinding.Security.Mode = SecurityMode.Message;
+            wsbinding.Security.Message.ClientCredentialType = MessageCredentialType.UserName;
+            CalculatorClient client = new CalculatorClient(wsbinding, new EndpointAddress("http://192.168.1.170:8000/ServiceModelSamples/service.svc"));
 
+
+            client.ClientCredentials.UserName.Password = "password";
+            client.ClientCredentials.UserName.UserName = "user";
             // Call the Add service operation.
             double value1 = 100.00D;
             double value2 = 15.99D;
