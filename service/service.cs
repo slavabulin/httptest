@@ -6,21 +6,40 @@ using System;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Description;
+using System.Xml;
+using System.ServiceModel.Dispatcher;
+using System.Collections.Generic;
+using System.Xml.Serialization;
+using System.IO;
+using System.Text;
+using System.Runtime.Serialization;
+using System.Security.Cryptography;
+using System.Collections.ObjectModel;
+
 
 namespace Microsoft.Samples.Http
 {
     // Define a service contract.
-    [ServiceContract(Namespace="http://Microsoft.Samples.Http")]
+    [ServiceContract(Namespace="http://Microsoft.Samples.Http"),
+    XmlSerializerFormat,
+    SecurityContractBehavior
+    ]
     public interface ICalculator
     {
-        [OperationContract]
+        [OperationContract(Action = "*", ReplyAction = "*"),
+        SecurityOperationBehavoirAttribute("Add", "http://Microsoft.Samples.Http", 3)]
         double Add(double n1, double n2);
-        [OperationContract]
+        [OperationContract(ReplyAction = "*"),
+        SecurityOperationBehavoirAttribute("Subtract", "http://Microsoft.Samples.Http", 3)]
         double Subtract(double n1, double n2);
-        [OperationContract]
+        [OperationContract(ReplyAction = "*"),
+        SecurityOperationBehavoirAttribute("Multiply", "http://Microsoft.Samples.Http", 1)]
         double Multiply(double n1, double n2);
         [OperationContract]
         double Divide(double n1, double n2);
+        [OperationContract(ReplyAction = "*"),
+        SecurityOperationBehavoirAttribute("GetScopes", "http://www.onvif.org/ver10/device/wsdl", 0)]
+        double GetScopes(double n1, double n2);
     }
 
     // Service class which implements the service contract.
@@ -45,6 +64,11 @@ namespace Microsoft.Samples.Http
         {
             return n1 / n2;
         }
+
+        public double GetScopes(double n1, double n2)
+        {
+            return 10;
+        }
     }
 
     
@@ -52,34 +76,489 @@ namespace Microsoft.Samples.Http
     {
         public static void Main()
         {
-            Uri baseAddress = new Uri("http://192.168.1.170:8000");
+            Uri baseAddress = new Uri("http://192.168.1.170:80");
             using (ServiceHost serviceHost = new ServiceHost(typeof(CalculatorService), baseAddress))
             {
-                SecurityBindingElement sbe;
-                sbe.AllowInsecureTransport = true;
-                WSHttpBinding binding = new WSHttpBinding(SecurityMode.Message);
-                binding.Security.Message.ClientCredentialType =  MessageCredentialType.UserName;
-                
+                WSHttpBinding binding = new WSHttpBinding(SecurityMode.None);                
                 
                 ServiceEndpoint DeviceServiceEndpoint = serviceHost.AddServiceEndpoint(typeof(ICalculator),
                     binding, 
-                    "ServiceModelSamples/service.svc"
+                    "/onvif/device_service"
                     );
-                //serviceHost.Credentials.UserNameAuthentication.UserNamePasswordValidationMode();
-
-                ServiceAuthenticationManager serviceAuthenticationManager = new ServiceAuthenticationManager();
-                //serviceAuthenticationManager.Authenticate();
-                serviceHost.Authentication.ServiceAuthenticationManager = serviceAuthenticationManager;
-
 
                 serviceHost.Open();
+
                 // The service can now be accessed.
                 Console.WriteLine("Service started at {0}", serviceHost.BaseAddresses[0]);
                 Console.WriteLine("Press ENTER to terminate service.");
                 Console.ReadLine();
+            }            
+        }
+    }
+
+    public class SecurityOperationBehavoirAttribute : Attribute, IOperationBehavior
+    {
+        static List<XmlQualifiedName> adminList = new List<XmlQualifiedName>();
+        static List<XmlQualifiedName> anonList = new List<XmlQualifiedName>();
+        static List<XmlQualifiedName> operatorList = new List<XmlQualifiedName>();
+        static List<XmlQualifiedName> userList = new List<XmlQualifiedName>();
+        static Dictionary<string, List<XmlQualifiedName>> summartList = new Dictionary< string,List<XmlQualifiedName>>();
+
+        
+        public SecurityOperationBehavoirAttribute(string name)
+        {
+         //   adminList = new XmlQualifiedName(name);
+        }
+
+        public SecurityOperationBehavoirAttribute(string name, string ns)
+        {
+           // adminList = new XmlQualifiedName(name, ns);
+        }
+
+        public SecurityOperationBehavoirAttribute(string name, string ns, int usertype)
+        {
+            adminList.Add(new XmlQualifiedName(name, ns));
+            switch (usertype)
+            { 
+                case 0:
+                    break;
+                case 1:
+                    operatorList.Add(new XmlQualifiedName(name, ns));
+                    break;
+                case 2:
+                    operatorList.Add(new XmlQualifiedName(name, ns));
+                    userList.Add(new XmlQualifiedName(name, ns));
+                    break;
+                case 3:
+                    operatorList.Add(new XmlQualifiedName(name, ns));
+                    userList.Add(new XmlQualifiedName(name, ns));
+                    anonList.Add(new XmlQualifiedName(name, ns));
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        internal Dictionary<string, List<XmlQualifiedName>> QName
+        {
+            get {
+                summartList.Add("anon", anonList);
+                summartList.Add("admin", adminList);
+                summartList.Add("user", userList);
+                summartList.Add("oper", operatorList);
+                return summartList;
+            }
+            set { summartList = value; }
+        }
+
+        public void AddBindingParameters(OperationDescription operationDescription, BindingParameterCollection bindingParameters)
+        {
+        }
+
+        public void ApplyClientBehavior(OperationDescription operationDescription, ClientOperation clientOperation)
+        {
+        }
+
+        public void ApplyDispatchBehavior(OperationDescription operationDescription, DispatchOperation dispatchOperation)
+        {
+        }
+
+        public void Validate(OperationDescription operationDescription)
+        {
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
+    sealed class SecurityContractBehaviorAttribute : Attribute, IContractBehavior
+    {
+        #region IContractBehavior Members
+
+        public void AddBindingParameters(ContractDescription contractDescription, ServiceEndpoint endpoint, System.ServiceModel.Channels.BindingParameterCollection bindingParameters)
+        {
+            // no binding parameters need to be set here
+            return;
+        }
+
+        public void ApplyClientBehavior(ContractDescription contractDescription, ServiceEndpoint endpoint, System.ServiceModel.Dispatcher.ClientRuntime clientRuntime)
+        {
+            // this is a dispatch-side behavior which doesn't require
+            // any action on the client
+            return;
+        }
+
+        public void ApplyDispatchBehavior(ContractDescription contractDescription, ServiceEndpoint endpoint, System.ServiceModel.Dispatcher.DispatchRuntime dispatchRuntime)
+        {
+            Dictionary<string, List<XmlQualifiedName>> dispatchDictionary = new Dictionary<string, List<XmlQualifiedName>>();
+
+            SecurityOperationBehavoirAttribute securityOperationBehavoirAttribute =
+                    contractDescription.Operations[0].Behaviors.Find<SecurityOperationBehavoirAttribute>();
+            dispatchDictionary = securityOperationBehavoirAttribute.QName;
+
+            dispatchRuntime.OperationSelector =
+               new SecurityOperationSelector(
+                  dispatchDictionary);
+        }
+
+        public void Validate(ContractDescription contractDescription, ServiceEndpoint endpoint)
+        {
+        }
+
+        #endregion
+    }
+
+    class SecurityOperationSelector : IDispatchOperationSelector
+	{
+        Dictionary<string, List<XmlQualifiedName>> dispatchDictionary;
+        string defaultOperationName;
+
+        public SecurityOperationSelector(Dictionary<string, List<XmlQualifiedName>> dispatchDictionary)
+        {
+            this.dispatchDictionary = dispatchDictionary;
+        }
+        
+        public string SelectOperation(ref System.ServiceModel.Channels.Message message)
+        {
+
+            //using (
+            MessageBuffer buffer = message.CreateBufferedCopy(Int32.MaxValue);
+              //)
+            {
+                List<XmlQualifiedName> methodList = new List<XmlQualifiedName>();
+                Usertype usertypefromfile = Usertype.wrongpass;
+                Message message1 = buffer.CreateMessage();// using
+                Message message2 = buffer.CreateMessage();// using
+                XmlDictionaryReader bodyReader = message2.GetReaderAtBodyContents();
+                XmlQualifiedName lookupQName = new XmlQualifiedName(bodyReader.LocalName, bodyReader.NamespaceURI);
+
+                message = message2;
+                //---------------------------------------
+                foreach (MessageHeaderInfo mheadinfo in message.Headers)
+                {
+                    if (mheadinfo.Name == "Security" || mheadinfo.Name == "security")
+                    {
+                        Console.WriteLine("Security Header found!");
+
+                        // - check if method needs security
+                        //message.Action
+                        //         else select operation
+                        // - cut sec header
+                        // - deserialize sec header
+                        // - check if credentials are valid
+                        // - select operation 
+
+                        String msg = message.ToString();
+                        int startindex = msg.IndexOf("<UsernameToken");// and if in lower case?
+                        int endindex = msg.IndexOf("</UsernameToken");
+                        String securityheaderstring = msg.Substring(startindex, (endindex - startindex + 16));
+                        if (!securityheaderstring.EndsWith(">"))
+                            securityheaderstring.Insert(securityheaderstring.Length, ">");
+
+                        Security secheader = new Security();
+                        secheader.Token = new UsernameToken();
+                        XmlSerializer xmlSerializer = new XmlSerializer(typeof(UsernameToken));
+                        securityheaderstring = "<?xml version='1.0' encoding='utf-8' ?>" + securityheaderstring;
+                        int strtcutindexcreate;
+                        if (securityheaderstring.Contains("Created"))
+                        {
+                            strtcutindexcreate = securityheaderstring.IndexOf("<Created");
+                        }
+                        else
+                        {
+                            strtcutindexcreate = securityheaderstring.IndexOf("<created");
+                        }
+                        int endcutindexcreate = securityheaderstring.IndexOf(">", strtcutindexcreate);
+                        securityheaderstring = securityheaderstring.Remove(strtcutindexcreate + 9, (endcutindexcreate - strtcutindexcreate - 9));
+                        using (Stream ms = new MemoryStream(Encoding.UTF8.GetBytes(securityheaderstring)))
+                        {
+                            try
+                            {
+                                secheader.Token = (UsernameToken)xmlSerializer.Deserialize(ms);
+                                CheckPasswordDigest checkpass = new CheckPasswordDigest(secheader.Token.Password,
+                                    secheader.Token.Username,
+                                    secheader.Token.Nonce,
+                                    secheader.Token.Created
+                                    );
+                                // get usertype from file
+                                usertypefromfile = checkpass.CheckPassword();
+                                //if (usertype != -1)
+                                if (usertypefromfile != Usertype.wrongpass)
+                                {
+                                    Console.WriteLine("Pass is valid!");
+                                    //choose method
+                                    //get user type
+                                    //check if type allows to call desired method
+
+                                    //-------------------------------------------------
+                                    
+                                    // check if it exists in dictionary
+                                    // get list of apropriate usertype
+                                    // and compare it with lookupQName
+                                    //-------------------------------------------------
+                                    foreach (string usrtype in dispatchDictionary.Keys)
+                                    {
+                                        if (usrtype == usertypefromfile.ToString())
+                                        {
+                                            try
+                                            {
+                                                dispatchDictionary.TryGetValue(usrtype, out methodList);                                                
+                                                //return dispatchDictionary[lookupQName];
+
+                                                foreach (XmlQualifiedName methodname in methodList)
+                                                {
+                                                    string tmpstring = methodname.Namespace + "/" + methodname.Name;
+                                                    if (methodname == lookupQName)
+                                                    {
+                                                        message = message1;
+                                                        return methodname.Name;
+                                                    }
+                                                }
+                                                //return null;
+                                            }
+                                            catch (ArgumentNullException ane)
+                                            {
+                                                throw ane;
+                                            }
+
+                                            
+                                        }
+                                    }
+                                    //if (dispatchDictionary.ContainsValue(lookupQName))
+                                    //{
+                                    //    // call method if true
+                                    //    message = message1;
+                                    //    //return dispatchDictionary[lookupQName];
+                                    //}
+                                    //else
+                                    //{
+                                    //    message = message1;
+                                    //    //call default method if false
+                                    //    return defaultOperationName;
+                                    //}
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Invalid password!");
+                                    message = message1;
+                                    return defaultOperationName;
+                                }
+                            }
+                            catch (SerializationException g)
+                            {
+                                Console.WriteLine("Не могу десериализовать файл конфигурации; " + g.Message);
+                                return null;
+                            }
+                            finally
+                            {
+                                ms.Close();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        //case if no security header
+                        // - check if desired method is in the allowed without auth method list
+                        //   if true - return methodname
+                         //   else defaultOpertionname
+                        return defaultOperationName;
+                    }
+                }
+                //--------------------------------
+                // надо выдать список методов
+                // которым не нужна аутентификация
+                //--------------------------------
+                return defaultOperationName;
+            }
+        }
+    }
+
+    public enum Usertype
+    {
+        anon,
+        admin,
+        oper,
+        user,
+        wrongpass
+    }
+
+    public class Security
+    {
+        private UsernameToken _token;
+
+        public UsernameToken Token
+        {
+            get
+            {
+                return this._token;
+            }
+            set
+            {
+                this._token = value;
+            }
+        }
+
+    }
+
+    public class UsernameToken
+    {
+        private string _name;
+        private string _pass;
+        private string _nonce;
+        private string _created;
+
+        public string Username
+        {
+            get
+            {
+                return this._name;
+            }
+            set
+            {
+                this._name = value;
+            }
+        }
+
+        public string Password
+        {
+            get
+            {
+                return this._pass;
+            }
+            set
+            {
+                this._pass = value;
+            }
+        }
+
+        public string Nonce
+        {
+            get
+            {
+                return this._nonce;
+            }
+            set
+            {
+                this._nonce = value;
+            }
+        }
+
+        public string Created
+        {
+            get
+            {
+                return this._created;
+            }
+            set
+            {
+                this._created = value;
+            }
+        }
+    }
+
+    public class User
+    {
+        public string username;
+        public string password;
+        public int usertype;
+    }
+
+    public class UserList : Collection<User>
+    {
+    }
+
+    public class CheckPasswordDigest
+    {
+        public string RecievedPasswordDigest;// = "admin";
+        public string Name;// = "admin";
+        public string Nonce;// = "aN6VJLJZfkCkkjpXT6GbX1UAAAAAAA==";
+        public string Created;// = "2015-05-13T13:44:47.631Z";
+        string PasswordFromFile;// = "admin";//read from file
+        static UserList userlist;
+        int UsertypeFromFile;
+
+        public CheckPasswordDigest(string Pass, string Name, string Nonce, string Created)
+        {
+            this.RecievedPasswordDigest = Pass;
+            this.Name = Name;
+            this.Nonce = Nonce;
+            this.Created = Created;
+            UsertypeFromFile = -1;
+
+            //open file and read passwords and usernames
+            //put them in a dictionary
+            using (FileStream fs = new FileStream("pwd.xml", FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+
+                XmlSerializer xmlSerializer = new XmlSerializer(typeof(UserList));
+
+                try
+                {
+                    userlist = (UserList)xmlSerializer.Deserialize(fs);
+                    foreach (User usr in userlist)
+                    {
+                        if (usr.username == Name)
+                        {
+                            PasswordFromFile = usr.password;
+                            UsertypeFromFile = usr.usertype;
+                            break;
+                        }
+                    }
+                }
+                catch (SerializationException g)
+                {
+                    Console.WriteLine("Не могу десериализовать файл конфигурации; " + g.Message);
+                    throw g;
+                }
+                finally
+                {
+                    fs.Close();
+                }
+            }            
+        }
+
+        public Usertype CheckPassword()
+        {
+            byte[] bytearrnonce = System.Convert.FromBase64String(Nonce);
+            byte[] bytearrcreated = Encoding.UTF8.GetBytes(Created);
+            //choose password by username from dictionary and put in PasswordFromFile
+            byte[] bytearrpass = Encoding.UTF8.GetBytes(PasswordFromFile);            
+
+            byte[] barr = new byte[bytearrnonce.Length + bytearrcreated.Length + bytearrpass.Length];
+            for (int r = 0; r < bytearrnonce.Length; r++)
+            {
+                barr[r] = bytearrnonce[r];
+            }
+            for (int t = 0; t < bytearrcreated.Length; t++)
+            {
+                barr[bytearrnonce.Length + t] = bytearrcreated[t];
+            }
+            for (int y = 0; y < bytearrpass.Length; y++)
+            {
+                barr[bytearrnonce.Length + bytearrcreated.Length + y] = bytearrpass[y];
             }
 
-            
+            string DerivedPasswordDigest = System.Convert.ToBase64String(SHA1.Create().ComputeHash(barr));
+            if (DerivedPasswordDigest == RecievedPasswordDigest)
+            {
+                switch (UsertypeFromFile)
+                {
+                    case -1:
+                        return Usertype.wrongpass;
+                    case 0:
+                        return Usertype.admin;
+                    case 1:
+                        return Usertype.oper;
+                    case 2:
+                        return Usertype.user;
+                    case 3:
+                        return Usertype.anon;    
+                    default:
+                        return Usertype.wrongpass;
+                }
+            }
+            else
+            {
+                return Usertype.wrongpass;
+            }
         }
     }
 }

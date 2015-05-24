@@ -10,21 +10,25 @@
 namespace Microsoft.Samples.Http
 {
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    [System.ServiceModel.ServiceContractAttribute(Namespace="http://Microsoft.Samples.Http", ConfigurationName="Microsoft.Samples.Http.ICalculator")]
+    [System.ServiceModel.ServiceContractAttribute(Namespace = "http://Microsoft.Samples.Http", ConfigurationName = "Microsoft.Samples.Http.ICalculator")]
     public interface ICalculator
     {
-        [System.ServiceModel.OperationContractAttribute(Action="http://Microsoft.Samples.Http/ICalculator/Add", ReplyAction="http://Microsoft.Samples.Http/ICalculator/AddResponse")]
+        [System.ServiceModel.OperationContractAttribute(Action = "http://Microsoft.Samples.Http/ICalculator/Add", ReplyAction = "http://Microsoft.Samples.Http/ICalculator/AddResponse")]
         double Add(double n1, double n2);
-        
-        [System.ServiceModel.OperationContractAttribute(Action="http://Microsoft.Samples.Http/ICalculator/Subtract", ReplyAction="http://Microsoft.Samples.Http/ICalculator/SubtractResponse")]
+
+        [System.ServiceModel.OperationContractAttribute(Action = "http://Microsoft.Samples.Http/ICalculator/Subtract", ReplyAction = "http://Microsoft.Samples.Http/ICalculator/SubtractResponse")]
         double Subtract(double n1, double n2);
-        
-        [System.ServiceModel.OperationContractAttribute(Action="http://Microsoft.Samples.Http/ICalculator/Multiply", ReplyAction="http://Microsoft.Samples.Http/ICalculator/MultiplyResponse")]
+
+        [System.ServiceModel.OperationContractAttribute(Action = "http://Microsoft.Samples.Http/ICalculator/Multiply", ReplyAction = "http://Microsoft.Samples.Http/ICalculator/MultiplyResponse")]
         double Multiply(double n1, double n2);
-        
-        [System.ServiceModel.OperationContractAttribute(Action="http://Microsoft.Samples.Http/ICalculator/Divide", ReplyAction="http://Microsoft.Samples.Http/ICalculator/DivideResponse")]
+
+        [System.ServiceModel.OperationContractAttribute(Action = "http://Microsoft.Samples.Http/ICalculator/Divide", ReplyAction = "http://Microsoft.Samples.Http/ICalculator/DivideResponse")]
         double Divide(double n1, double n2);
+
+        [System.ServiceModel.OperationContractAttribute(Action = "http://www.onvif.org/ver10/device/wsdl/GetScopes", ReplyAction = "http://Microsoft.Samples.Http/ICalculator/GetScopesResponse")]
+        double GetScopes(double n1, double n2);
     }
+
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     public interface ICalculatorChannel : Microsoft.Samples.Http.ICalculator, System.ServiceModel.IClientChannel
@@ -79,6 +83,11 @@ namespace Microsoft.Samples.Http
         public double Divide(double n1, double n2)
         {
             return base.Channel.Divide(n1, n2);
+        }
+
+        public double GetScopes(double n1, double n2)
+        {
+            return base.Channel.GetScopes(n1, n2);
         }
     }
 }
