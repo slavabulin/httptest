@@ -85,7 +85,6 @@ namespace Microsoft.Samples.Http
                     binding, 
                     "/onvif/device_service"
                     );
-
                 serviceHost.Open();
                 Console.WriteLine("Service started at {0}", serviceHost.BaseAddresses[0]);
                 Console.WriteLine("Press ENTER to terminate service.");

@@ -11,3 +11,4 @@ d:\work\Onvif\prog\Http\CS\service\bin\client.pdb
 d:\work\Onvif\prog\Http\CS\service\obj\Debug\ResolveAssemblyReference.cache
 d:\work\Onvif\prog\Http\CS\service\obj\Debug\service.exe
 d:\work\Onvif\prog\Http\CS\service\obj\Debug\service.pdb
+d:\work\!Prog\repo\service\bin\service.exe.config
