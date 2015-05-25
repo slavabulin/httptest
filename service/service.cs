@@ -282,8 +282,9 @@ namespace Microsoft.Samples.Http
                                     );
                                 // get usertype from file
                                 usertypefromfile = checkpass.CheckPassword();
-                                //if (usertype != -1)
-                                #region check if creds are right
+
+                                #region check if creds are wright
+
                                 if (usertypefromfile != Usertype.wrongpass)
                                 {
                                     Console.WriteLine("Pass is valid!");
@@ -297,7 +298,9 @@ namespace Microsoft.Samples.Http
                                     // get list of apropriate usertype
                                     // and compare it with lookupQName
                                     //-------------------------------------------------
+
                                     #region get allowed methods list
+
                                     foreach (string usrtype in dispatchDictionary.Keys)
                                     {
                                         if (usrtype == usertypefromfile.ToString())
@@ -327,6 +330,7 @@ namespace Microsoft.Samples.Http
                                     }
                                     message = message1;
                                     return defaultOperationName;
+
                                     #endregion get allowed methods list
                                 }
                                 else
@@ -335,7 +339,8 @@ namespace Microsoft.Samples.Http
                                     message = message1;
                                     return defaultOperationName;
                                 }
-                                #endregion check if creds are right
+
+                                #endregion check if creds are wright
                             }
                             catch (SerializationException g)
                             {
