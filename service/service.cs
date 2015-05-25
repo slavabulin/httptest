@@ -1,9 +1,12 @@
 ﻿
 
+<<<<<<< HEAD
 
 
 
 
+=======
+>>>>>>> http-test_002
 //----------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //----------------------------------------------------------------
@@ -91,10 +94,7 @@ namespace Microsoft.Samples.Http
                     binding, 
                     "/onvif/device_service"
                     );
-
                 serviceHost.Open();
-
-                // The service can now be accessed.
                 Console.WriteLine("Service started at {0}", serviceHost.BaseAddresses[0]);
                 Console.WriteLine("Press ENTER to terminate service.");
                 Console.ReadLine();
