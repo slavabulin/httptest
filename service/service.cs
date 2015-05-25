@@ -234,6 +234,7 @@ namespace Microsoft.Samples.Http
                 //---------------------------------------
                 foreach (MessageHeaderInfo mheadinfo in message.Headers)
                 {
+                    //check if security header exists
                     if (mheadinfo.Name == "Security" || mheadinfo.Name == "security")
                     {
                         Console.WriteLine("Security Header found!");
@@ -353,6 +354,7 @@ namespace Microsoft.Samples.Http
                             }
                         }
                     }
+                    //if security header doesnt exists
                     else
                     {
                         //case if no security header
