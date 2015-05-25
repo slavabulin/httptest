@@ -218,7 +218,7 @@ namespace Microsoft.Samples.Http
         
         public string SelectOperation(ref System.ServiceModel.Channels.Message message)
         {
-
+            //!!!!!!!can leak here (with buffer, message1, message2)!!!!!
             //using (
             MessageBuffer buffer = message.CreateBufferedCopy(Int32.MaxValue);
               //)
@@ -235,6 +235,7 @@ namespace Microsoft.Samples.Http
                 foreach (MessageHeaderInfo mheadinfo in message.Headers)
                 {
                     //check if security header exists
+                    #region check security header
                     if (mheadinfo.Name == "Security" || mheadinfo.Name == "security")
                     {
                         Console.WriteLine("Security Header found!");
@@ -282,6 +283,7 @@ namespace Microsoft.Samples.Http
                                 // get usertype from file
                                 usertypefromfile = checkpass.CheckPassword();
                                 //if (usertype != -1)
+                                #region check if creds are right
                                 if (usertypefromfile != Usertype.wrongpass)
                                 {
                                     Console.WriteLine("Pass is valid!");
@@ -295,15 +297,15 @@ namespace Microsoft.Samples.Http
                                     // get list of apropriate usertype
                                     // and compare it with lookupQName
                                     //-------------------------------------------------
+                                    #region get allowed methods list
                                     foreach (string usrtype in dispatchDictionary.Keys)
                                     {
                                         if (usrtype == usertypefromfile.ToString())
                                         {
                                             try
                                             {
-                                                dispatchDictionary.TryGetValue(usrtype, out methodList);                                                
-                                                //return dispatchDictionary[lookupQName];
-
+                                                dispatchDictionary.TryGetValue(usrtype, out methodList);
+                                                //check if allowed method requested
                                                 foreach (XmlQualifiedName methodname in methodList)
                                                 {
                                                     string tmpstring = methodname.Namespace + "/" + methodname.Name;
@@ -323,18 +325,9 @@ namespace Microsoft.Samples.Http
                                             
                                         }
                                     }
-                                    //if (dispatchDictionary.ContainsValue(lookupQName))
-                                    //{
-                                    //    // call method if true
-                                    //    message = message1;
-                                    //    //return dispatchDictionary[lookupQName];
-                                    //}
-                                    //else
-                                    //{
-                                    //    message = message1;
-                                    //    //call default method if false
-                                    //    return defaultOperationName;
-                                    //}
+                                    message = message1;
+                                    return defaultOperationName;
+                                    #endregion get allowed methods list
                                 }
                                 else
                                 {
@@ -342,11 +335,12 @@ namespace Microsoft.Samples.Http
                                     message = message1;
                                     return defaultOperationName;
                                 }
+                                #endregion check if creds are right
                             }
                             catch (SerializationException g)
                             {
                                 Console.WriteLine("Не могу десериализовать файл конфигурации; " + g.Message);
-                                return null;
+                                return defaultOperationName;
                             }
                             finally
                             {
@@ -360,16 +354,30 @@ namespace Microsoft.Samples.Http
                     else
                     {
                         //case if no security header
-                        // - check if desired method is in the allowed without auth method list
-                        //   if true - return methodname
-                         //   else defaultOpertionname
+                        try
+                        {
+                            // - check if desired method is in the allowed without auth method list
+                            dispatchDictionary.TryGetValue("anon", out methodList);
+                            foreach (XmlQualifiedName methodname in methodList)
+                            {
+                                string tmpstring = methodname.Namespace + "/" + methodname.Name;
+                                //   if true - return methodname
+                                //   else defaultOpertionname
+                                if (methodname == lookupQName)
+                                {
+                                    message = message1;
+                                    return methodname.Name;
+                                }
+                            }
+                        }
+                        catch (ArgumentNullException ane)
+                        {
+                            throw ane;
+                        }
                         return defaultOperationName;
                     }
+                    #endregion check security header
                 }
-                //--------------------------------
-                // надо выдать список методов
-                // которым не нужна аутентификация
-                //--------------------------------
                 return defaultOperationName;
             }
         }
