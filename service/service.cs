@@ -87,7 +87,6 @@ namespace Microsoft.Samples.Http
                     );
 
                 serviceHost.Open();
-                // The service can now be accessed.
                 Console.WriteLine("Service started at {0}", serviceHost.BaseAddresses[0]);
                 Console.WriteLine("Press ENTER to terminate service.");
                 Console.ReadLine();
