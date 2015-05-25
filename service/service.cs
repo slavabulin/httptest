@@ -355,6 +355,8 @@ namespace Microsoft.Samples.Http
                         }
                     }
                     //if security header doesnt exists
+                    //check anon user branch for called method
+                    //
                     else
                     {
                         //case if no security header
