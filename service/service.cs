@@ -288,12 +288,7 @@ namespace Microsoft.Samples.Http
                                 if (usertypefromfile != Usertype.wrongpass)
                                 {
                                     Console.WriteLine("Pass is valid!");
-                                    //choose method
-                                    //get user type
-                                    //check if type allows to call desired method
-
-                                    //-------------------------------------------------
-                                    
+                                    //-------------------------------------------------                                    
                                     // check if it exists in dictionary
                                     // get list of apropriate usertype
                                     // and compare it with lookupQName
@@ -318,7 +313,6 @@ namespace Microsoft.Samples.Http
                                                         return methodname.Name;
                                                     }
                                                 }
-                                                //return null;
                                             }
                                             catch (ArgumentNullException ane)
                                             {
