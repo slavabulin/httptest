@@ -196,7 +196,9 @@ namespace Microsoft.Samples.Http
 
             dispatchRuntime.OperationSelector =
                new SecurityOperationSelector(
-                  dispatchDictionary);
+                  dispatchDictionary,
+                  dispatchRuntime.UnhandledDispatchOperation.Name
+                  );
         }
 
         public void Validate(ContractDescription contractDescription, ServiceEndpoint endpoint)
@@ -211,9 +213,10 @@ namespace Microsoft.Samples.Http
         Dictionary<string, List<XmlQualifiedName>> dispatchDictionary;
         string defaultOperationName;
 
-        public SecurityOperationSelector(Dictionary<string, List<XmlQualifiedName>> dispatchDictionary)
+        public SecurityOperationSelector(Dictionary<string, List<XmlQualifiedName>> dispatchDictionary, string defaultOperationName)
         {
             this.dispatchDictionary = dispatchDictionary;
+            this.defaultOperationName = defaultOperationName;
         }
         
         public string SelectOperation(ref System.ServiceModel.Channels.Message message)
@@ -373,10 +376,12 @@ namespace Microsoft.Samples.Http
                         {
                             throw ane;
                         }
+                        message = message1;
                         return defaultOperationName;
                     }
                     #endregion check security header
                 }
+                message = message1;
                 return defaultOperationName;
             }
         }
@@ -528,42 +533,52 @@ namespace Microsoft.Samples.Http
 
         public Usertype CheckPassword()
         {
-            byte[] bytearrnonce = System.Convert.FromBase64String(Nonce);
-            byte[] bytearrcreated = Encoding.UTF8.GetBytes(Created);
+            byte[] bytearrpass;
+            byte[] bytearrnonce;
+            byte[] bytearrcreated;
             //choose password by username from dictionary and put in PasswordFromFile
-            byte[] bytearrpass = Encoding.UTF8.GetBytes(PasswordFromFile);            
+            if (PasswordFromFile != null && Nonce != null && Created != null)
+            {
+                bytearrnonce = System.Convert.FromBase64String(Nonce);
+                bytearrcreated = Encoding.UTF8.GetBytes(Created);
+                bytearrpass = Encoding.UTF8.GetBytes(PasswordFromFile);
 
-            byte[] barr = new byte[bytearrnonce.Length + bytearrcreated.Length + bytearrpass.Length];
-            for (int r = 0; r < bytearrnonce.Length; r++)
-            {
-                barr[r] = bytearrnonce[r];
-            }
-            for (int t = 0; t < bytearrcreated.Length; t++)
-            {
-                barr[bytearrnonce.Length + t] = bytearrcreated[t];
-            }
-            for (int y = 0; y < bytearrpass.Length; y++)
-            {
-                barr[bytearrnonce.Length + bytearrcreated.Length + y] = bytearrpass[y];
-            }
-
-            string DerivedPasswordDigest = System.Convert.ToBase64String(SHA1.Create().ComputeHash(barr));
-            if (DerivedPasswordDigest == RecievedPasswordDigest)
-            {
-                switch (UsertypeFromFile)
+                byte[] barr = new byte[bytearrnonce.Length + bytearrcreated.Length + bytearrpass.Length];
+                for (int r = 0; r < bytearrnonce.Length; r++)
                 {
-                    case -1:
-                        return Usertype.wrongpass;
-                    case 0:
-                        return Usertype.admin;
-                    case 1:
-                        return Usertype.oper;
-                    case 2:
-                        return Usertype.user;
-                    case 3:
-                        return Usertype.anon;    
-                    default:
-                        return Usertype.wrongpass;
+                    barr[r] = bytearrnonce[r];
+                }
+                for (int t = 0; t < bytearrcreated.Length; t++)
+                {
+                    barr[bytearrnonce.Length + t] = bytearrcreated[t];
+                }
+                for (int y = 0; y < bytearrpass.Length; y++)
+                {
+                    barr[bytearrnonce.Length + bytearrcreated.Length + y] = bytearrpass[y];
+                }
+
+                string DerivedPasswordDigest = System.Convert.ToBase64String(SHA1.Create().ComputeHash(barr));
+                if (DerivedPasswordDigest == RecievedPasswordDigest)
+                {
+                    switch (UsertypeFromFile)
+                    {
+                        case -1:
+                            return Usertype.wrongpass;
+                        case 0:
+                            return Usertype.admin;
+                        case 1:
+                            return Usertype.oper;
+                        case 2:
+                            return Usertype.user;
+                        case 3:
+                            return Usertype.anon;
+                        default:
+                            return Usertype.wrongpass;
+                    }
+                }
+                else
+                {
+                    return Usertype.wrongpass;
                 }
             }
             else
