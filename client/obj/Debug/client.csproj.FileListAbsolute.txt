@@ -10,3 +10,6 @@ d:\work\Onvif\prog\Http\CS\client\bin\client.pdb
 d:\work\Onvif\prog\Http\CS\client\obj\Debug\ResolveAssemblyReference.cache
 d:\work\Onvif\prog\Http\CS\client\obj\Debug\client.exe
 d:\work\Onvif\prog\Http\CS\client\obj\Debug\client.pdb
+d:\work\!Prog\repo\client\bin\client.exe.config
+d:\work\!Prog\repo\client\obj\Debug\client.exe
+d:\work\!Prog\repo\client\obj\Debug\client.pdb
