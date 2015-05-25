@@ -221,7 +221,7 @@ namespace Microsoft.Samples.Http
         
         public string SelectOperation(ref System.ServiceModel.Channels.Message message)
         {
-            //!!!!!can leak here (with buffer, message1, message2)!!!!!
+            //!!!!can leak here (with buffer, message1, message2)!!!!!
             //using (
             MessageBuffer buffer = message.CreateBufferedCopy(Int32.MaxValue);
               //)
