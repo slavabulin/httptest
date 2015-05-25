@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+<s:Header>
+<!--
+<Security s:mustUnderstand="1" xmlns="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
+-->
+<Security>
+	<UsernameToken>
+		<Username>admin</Username>
+		<Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordDigest">wRHUFc1slwB8LaMm7QJnLaiD4cI=</Password>
+		<Nonce EncodingType="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary">aN6VJLJZfkCkkjpXT6GbX1UAAAAAAA==</Nonce>
+		<Created xmlns="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">2015-05-13T13:44:47.631Z</Created>
+	</UsernameToken>
+</Security>
+
+
+<!--
+<Security s:mustUnderstand="1"
+xmlns="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
+	<UsernameToken>
+		<Username>user</Username>
+		<Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordDigest">o9Pv3czBUu4B+mUJRqkFsIz/CNY=</Password>
+		<Nonce EncodingType="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary">39VOCjFTqEGHdamjw1XvBVkAAAAAAA==</Nonce>
+		<Created xmlns="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">2015-05-22T13:46:38.170Z</Created>
+	</UsernameToken>
+</Security>
+-->
+
+<a:Action s:mustUnderstand="1">http://www.onvif.org/ver10/device/wsdl/GetScopes</a:Action>
+<a:MessageID>urn:uuid:fe273794-dfc6-4c15-887c-3d43055c74cb</a:MessageID>
+<a:ReplyTo>
+	<a:Address>http://www.w3.org/2005/08/addressing/anonymous</a:Address>
+</a:ReplyTo>
+<a:To s:mustUnderstand="1">http://192.168.1.170/onvif/device_service</a:To>
+</s:Header>
+<s:Body>
+<GetScopes xmlns="http://www.onvif.org/ver10/device/wsdl">
+<n1>5.9</n1>
+<n2>15.99</n2>
+</GetScopes>
+</s:Body></s:Envelope>
