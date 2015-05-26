@@ -10,15 +10,13 @@ using System.ServiceModel.Dispatcher;
 namespace Microsoft.Samples.Http
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
-    sealed class DispatchByBodyElementBehaviorAttribute : Attribute, IContractBehavior
+    sealed class SecurityContractBehaviorAttribute : Attribute, IContractBehavior
     {
         #region IContractBehavior Members
 
         public void AddBindingParameters(ContractDescription contractDescription, ServiceEndpoint endpoint, System.ServiceModel.Channels.BindingParameterCollection bindingParameters)
         {
-            //System.ServiceModel.Channels.HttpRequestMessageProperty.Name.
             // no binding parameters need to be set here
-            //TyphoonCom.log.Debug("AddBindingParameters");
             return;
         }
 
@@ -31,36 +29,27 @@ namespace Microsoft.Samples.Http
 
         public void ApplyDispatchBehavior(ContractDescription contractDescription, ServiceEndpoint endpoint, System.ServiceModel.Dispatcher.DispatchRuntime dispatchRuntime)
         {
-            Dictionary<XmlQualifiedName,string> dispatchDictionary = 
-                             new Dictionary<XmlQualifiedName,string>();
-            foreach( OperationDescription operationDescription in 
-                                      contractDescription.Operations )
+            Dictionary<string, List<XmlQualifiedName>> dispatchDictionary = new Dictionary<string, List<XmlQualifiedName>>();
+
+            SecurityOperationBehavoirAttribute securityOperationBehavoirAttribute =
+                    contractDescription.Operations[0].Behaviors.Find<SecurityOperationBehavoirAttribute>();
+            if (securityOperationBehavoirAttribute != null && securityOperationBehavoirAttribute.QName != null)
             {
-               DispatchBodyElementAttribute dispatchBodyElement = 
-           operationDescription.Behaviors.Find<DispatchBodyElementAttribute>();
-                if (dispatchBodyElement != null )
-                {
-                    if (!dispatchDictionary.ContainsKey(dispatchBodyElement.QName))
-                    {
-                        dispatchDictionary.Add(dispatchBodyElement.QName,
-                                         operationDescription.Name);
-                        dispatchRuntime.OperationSelector =
-                        new DispatchByBodyElementOperationSelector(
-                           dispatchDictionary,
-                           dispatchRuntime.UnhandledDispatchOperation.Name);
-                    
-                     //break;
-                    }
-                }
+                dispatchDictionary = securityOperationBehavoirAttribute.QName;
+
+                dispatchRuntime.OperationSelector =
+                   new SecurityOperationSelector(
+                      dispatchDictionary,
+                      dispatchRuntime.UnhandledDispatchOperation.Name
+                      );
             }
-            
         }
 
         public void Validate(ContractDescription contractDescription, ServiceEndpoint endpoint)
         {
-            // 
         }
 
         #endregion
     }
+
 }

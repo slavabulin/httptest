@@ -66,9 +66,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DispatchBodyElementAttribute.cs" />
-    <Compile Include="DispatchByBodyElementBehaviorAttribute.cs" />
-    <Compile Include="DispatchByBodyElementOperationSelector.cs" />
+    <Compile Include="SecurityOperationBehaviorAttribute.cs" />
+    <Compile Include="SecurityContractBehaviorAttribute.cs" />
+    <Compile Include="SecurityOperationSelector.cs" />
     <Compile Include="service.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
