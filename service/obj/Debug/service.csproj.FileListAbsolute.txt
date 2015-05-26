@@ -13,3 +13,10 @@ d:\work\Onvif\prog\Http\CS\service\obj\Debug\service.exe
 d:\work\Onvif\prog\Http\CS\service\obj\Debug\service.pdb
 d:\work\!Prog\repo\service\bin\service.exe.config
 d:\work\!Prog\repo\httptest\service\bin\service.exe.config
+d:\work\!Prog\repo\httptest\service\bin\service.exe
+d:\work\!Prog\repo\httptest\service\bin\service.pdb
+d:\work\!Prog\repo\httptest\service\bin\client.exe
+d:\work\!Prog\repo\httptest\service\bin\client.pdb
+d:\work\!Prog\repo\httptest\service\obj\Debug\ResolveAssemblyReference.cache
+d:\work\!Prog\repo\httptest\service\obj\Debug\service.exe
+d:\work\!Prog\repo\httptest\service\obj\Debug\service.pdb

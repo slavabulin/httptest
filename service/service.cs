@@ -23,23 +23,39 @@ namespace Microsoft.Samples.Http
     // Define a service contract.
     [ServiceContract(Namespace="http://Microsoft.Samples.Http"),
     XmlSerializerFormat,
+    DispatchByBodyElementBehavior,
     SecurityContractBehavior
     ]
     public interface ICalculator
     {
         [OperationContract(Action = "*", ReplyAction = "*"),
-        SecurityOperationBehavoirAttribute("Add", "http://Microsoft.Samples.Http", 3)]
+        SecurityOperationBehavoirAttribute("Add", "http://Microsoft.Samples.Http", 3),
+        DispatchBodyElement("Add", "http://Microsoft.Samples.Http")/*,
+        SecurityOperationBehavoirAttribute("Add", "http://Microsoft.Samples.Http", 3)*/
+        ]
         double Add(double n1, double n2);
         [OperationContract(ReplyAction = "*"),
-        SecurityOperationBehavoirAttribute("Subtract", "http://Microsoft.Samples.Http", 3)]
+        SecurityOperationBehavoirAttribute("Subtract", "http://Microsoft.Samples.Http", 3),
+        DispatchBodyElement("Subtract", "http://Microsoft.Samples.Http")/*,
+        SecurityOperationBehavoirAttribute("Subtract", "http://Microsoft.Samples.Http", 3)*/
+        ]
         double Subtract(double n1, double n2);
         [OperationContract(ReplyAction = "*"),
-        SecurityOperationBehavoirAttribute("Multiply", "http://Microsoft.Samples.Http", 1)]
+        SecurityOperationBehavoirAttribute("Multiply", "http://Microsoft.Samples.Http", 1),
+        DispatchBodyElement("Multiply", "http://Microsoft.Samples.Http")/*,
+        SecurityOperationBehavoirAttribute("Multiply", "http://Microsoft.Samples.Http", 1)*/
+        ]
         double Multiply(double n1, double n2);
-        [OperationContract]
-        double Divide(double n1, double n2);
+
         [OperationContract(ReplyAction = "*"),
-        SecurityOperationBehavoirAttribute("GetScopes", "http://www.onvif.org/ver10/device/wsdl", 0)]
+        DispatchBodyElement("GetScopes", "http://www.onvif.org/ver10/device/wsdl")]
+        double Divide(double n1, double n2);
+
+        [OperationContract(ReplyAction = "*"),
+        SecurityOperationBehavoirAttribute("GetScopes", "http://www.onvif.org/ver10/device/wsdl", 0),
+        DispatchBodyElement("GetScopes", "http://www.onvif.org/ver10/device/wsdl")/*,
+        SecurityOperationBehavoirAttribute("GetScopes", "http://www.onvif.org/ver10/device/wsdl", 0)*/
+        ]
         double GetScopes(double n1, double n2);
     }
 
@@ -140,6 +156,7 @@ namespace Microsoft.Samples.Http
         internal Dictionary<string, List<XmlQualifiedName>> QName
         {
             get {
+                summartList = new Dictionary<string, List<XmlQualifiedName>>();
                 summartList.Add("anon", anonList);
                 summartList.Add("admin", adminList);
                 summartList.Add("user", userList);
@@ -190,13 +207,16 @@ namespace Microsoft.Samples.Http
 
             SecurityOperationBehavoirAttribute securityOperationBehavoirAttribute =
                     contractDescription.Operations[0].Behaviors.Find<SecurityOperationBehavoirAttribute>();
-            dispatchDictionary = securityOperationBehavoirAttribute.QName;
+            if (securityOperationBehavoirAttribute != null && securityOperationBehavoirAttribute.QName != null)
+            {
+                dispatchDictionary = securityOperationBehavoirAttribute.QName;
 
-            dispatchRuntime.OperationSelector =
-               new SecurityOperationSelector(
-                  dispatchDictionary,
-                  dispatchRuntime.UnhandledDispatchOperation.Name
-                  );
+                dispatchRuntime.OperationSelector =
+                   new SecurityOperationSelector(
+                      dispatchDictionary,
+                      dispatchRuntime.UnhandledDispatchOperation.Name
+                      );
+            }
         }
 
         public void Validate(ContractDescription contractDescription, ServiceEndpoint endpoint)
