@@ -265,14 +265,14 @@ namespace Microsoft.Samples.Http
             {
                 List<XmlQualifiedName> methodList = new List<XmlQualifiedName>();
                 Usertype usertypefromfile = Usertype.wrongpass;
-                Message msgcopy1;// = buffer.CreateMessage();// using
+                Message msgcopy1 = buffer.CreateMessage();// using
                 Message msgcopy2 = buffer.CreateMessage();//
-                Message msgcopy3 = buffer.CreateMessage();//
+                //Message msgcopy3 = buffer.CreateMessage();//
                 XmlDictionaryReader bodyReader = msgcopy2.GetReaderAtBodyContents();                
                 XmlQualifiedName lookupQName = new XmlQualifiedName(bodyReader.LocalName, bodyReader.NamespaceURI);
 
                 //if no action header - add it during CreateMessageCopy
-                msgcopy1 = CreateMessageCopy(msgcopy3, bodyReader);
+                //msgcopy1 = CreateMessageCopy(msgcopy3, bodyReader);
 
                 message = msgcopy1;
                 //---------------------------------------
