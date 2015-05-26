@@ -27,31 +27,36 @@ namespace Microsoft.Samples.Http
         {
             Message copy;
 
-            try
-            {
-                copy = Message.CreateMessage(message.Version, message.Headers.Action, body);
-                //copy = Message.CreateMessage(message.Version, null, body);//19.08
-            }
-            catch (ArgumentNullException e)
-            {
-                throw e;
-            }
-            if (message.Headers.Action == null)
-            {
-                message.Headers.Action = body.LocalName;
-                copy.Headers.CopyHeaderFrom(message, 0);///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                //
-                //copy.Headers.Action = "http://www.onvif.org/ver10/device/wsdl/" + body.LocalName;
-                copy.Headers.Action = body.NamespaceURI + "/" + body.LocalName;
+            MessageBuffer buffer = message.CreateBufferedCopy(Int32.MaxValue);
+            
+            Message message1 = buffer.CreateMessage();// using
+            Message message2 = buffer.CreateMessage();// using
 
-                copy.Properties.CopyProperties(message.Properties);
-                //Console.WriteLine(copy.Headers.Action.ToString());
-
-                //return copy;
+            if (message1.Headers.Action == null)
+            {
+                message1.Headers.Action = body.NamespaceURI + "/" + body.LocalName;
             }
-            //return message;
-            //Console.WriteLine("------------");
-            //Console.WriteLine(copy.Headers.Action.ToString());
+            MessageBuffer buffer1 = message1.CreateBufferedCopy(Int32.MaxValue);
+            copy = buffer1.CreateMessage();
+            //try
+            //{
+            //    copy = Message.CreateMessage(message.Version, message.Headers.Action, body);
+            //    //copy = Message.CreateMessage(message.Version, null, body);//19.08
+            //}
+            //catch (ArgumentNullException e)
+            //{
+            //    throw e;
+            //}
+            //if (message.Headers.Action == null)
+            //{
+            //    message.Headers.Action = body.LocalName;
+            //    copy.Headers.CopyHeaderFrom(message, 0);///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                
+            //    copy.Headers.Action = body.NamespaceURI + "/" + body.LocalName;
+
+            //    copy.Properties.CopyProperties(message.Properties);
+            //}
+            message = copy;
             return copy;
         }
 
@@ -59,9 +64,17 @@ namespace Microsoft.Samples.Http
 
         public string SelectOperation(ref System.ServiceModel.Channels.Message message)
         {
-            XmlDictionaryReader bodyReader = message.GetReaderAtBodyContents();
+            //XmlDictionaryReader bodyReader = message.GetReaderAtBodyContents();
+            //XmlQualifiedName lookupQName = new XmlQualifiedName(bodyReader.LocalName, bodyReader.NamespaceURI);
+            
+            MessageBuffer msgbuffer = message.CreateBufferedCopy(Int32.MaxValue);
+            Message messagecopy1 = msgbuffer.CreateMessage();
+            Message messagecopy2 = msgbuffer.CreateMessage();
+            XmlDictionaryReader bodyReader = messagecopy2.GetReaderAtBodyContents();
             XmlQualifiedName lookupQName = new XmlQualifiedName(bodyReader.LocalName, bodyReader.NamespaceURI);
-            message = CreateMessageCopy(message, bodyReader);
+
+            //message = CreateMessageCopy(message, bodyReader);
+            message = CreateMessageCopy(messagecopy1, bodyReader);
             if (dispatchDictionary.ContainsKey(lookupQName))
             {
                 return dispatchDictionary[lookupQName];

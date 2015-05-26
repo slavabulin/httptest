@@ -23,38 +23,40 @@ namespace Microsoft.Samples.Http
     // Define a service contract.
     [ServiceContract(Namespace="http://Microsoft.Samples.Http"),
     XmlSerializerFormat,
-    DispatchByBodyElementBehavior,
+    //DispatchByBodyElementBehavior,
     SecurityContractBehavior
     ]
     public interface ICalculator
     {
         [OperationContract(Action = "*", ReplyAction = "*"),
-        SecurityOperationBehavoirAttribute("Add", "http://Microsoft.Samples.Http", 3),
-        DispatchBodyElement("Add", "http://Microsoft.Samples.Http")/*,
-        SecurityOperationBehavoirAttribute("Add", "http://Microsoft.Samples.Http", 3)*/
+        SecurityOperationBehavoirAttribute("Add", "http://Microsoft.Samples.Http", 3)
+        //DispatchBodyElement("Add", "http://Microsoft.Samples.Http")/*,
+        //SecurityOperationBehavoirAttribute("Add", "http://Microsoft.Samples.Http", 3)*/
         ]
         double Add(double n1, double n2);
         [OperationContract(ReplyAction = "*"),
-        SecurityOperationBehavoirAttribute("Subtract", "http://Microsoft.Samples.Http", 3),
-        DispatchBodyElement("Subtract", "http://Microsoft.Samples.Http")/*,
-        SecurityOperationBehavoirAttribute("Subtract", "http://Microsoft.Samples.Http", 3)*/
+        SecurityOperationBehavoirAttribute("Subtract", "http://Microsoft.Samples.Http", 3)
+        //DispatchBodyElement("Subtract", "http://Microsoft.Samples.Http")/*,
+        //SecurityOperationBehavoirAttribute("Subtract", "http://Microsoft.Samples.Http", 3)*/
         ]
         double Subtract(double n1, double n2);
         [OperationContract(ReplyAction = "*"),
-        SecurityOperationBehavoirAttribute("Multiply", "http://Microsoft.Samples.Http", 1),
-        DispatchBodyElement("Multiply", "http://Microsoft.Samples.Http")/*,
-        SecurityOperationBehavoirAttribute("Multiply", "http://Microsoft.Samples.Http", 1)*/
+        SecurityOperationBehavoirAttribute("Multiply", "http://Microsoft.Samples.Http", 1)
+        //DispatchBodyElement("Multiply", "http://Microsoft.Samples.Http")/*,
+        //SecurityOperationBehavoirAttribute("Multiply", "http://Microsoft.Samples.Http", 1)*/
         ]
         double Multiply(double n1, double n2);
 
         [OperationContract(ReplyAction = "*"),
-        DispatchBodyElement("GetScopes", "http://www.onvif.org/ver10/device/wsdl")]
+        SecurityOperationBehavoirAttribute("Divide", "http://Microsoft.Samples.Http", 3)
+        //DispatchBodyElement("GetScopes", "http://www.onvif.org/ver10/device/wsdl")
+        ]
         double Divide(double n1, double n2);
 
         [OperationContract(ReplyAction = "*"),
-        SecurityOperationBehavoirAttribute("GetScopes", "http://www.onvif.org/ver10/device/wsdl", 0),
-        DispatchBodyElement("GetScopes", "http://www.onvif.org/ver10/device/wsdl")/*,
-        SecurityOperationBehavoirAttribute("GetScopes", "http://www.onvif.org/ver10/device/wsdl", 0)*/
+        SecurityOperationBehavoirAttribute("GetScopes", "http://www.onvif.org/ver10/device/wsdl", 0)
+        //DispatchBodyElement("GetScopes", "http://www.onvif.org/ver10/device/wsdl")/*,
+        //SecurityOperationBehavoirAttribute("GetScopes", "http://www.onvif.org/ver10/device/wsdl", 0)*/
         ]
         double GetScopes(double n1, double n2);
     }
@@ -236,7 +238,24 @@ namespace Microsoft.Samples.Http
             this.dispatchDictionary = dispatchDictionary;
             this.defaultOperationName = defaultOperationName;
         }
-        
+
+        private Message CreateMessageCopy(Message message, XmlDictionaryReader body)
+        {
+            Message copy;
+            MessageBuffer buffer = message.CreateBufferedCopy(Int32.MaxValue);
+            Message message1 = buffer.CreateMessage();// using
+            Message message2 = buffer.CreateMessage();// using
+            if (message1.Headers.Action == null)
+            {
+                message1.Headers.Action = body.NamespaceURI + "/" + body.LocalName;
+            }
+            MessageBuffer buffer1 = message1.CreateBufferedCopy(Int32.MaxValue);
+            copy = buffer1.CreateMessage();
+            message = copy;
+            return copy;
+        }
+
+
         public string SelectOperation(ref System.ServiceModel.Channels.Message message)
         {
             //!!!!can leak here (with buffer, message1, message2)!!!!!
@@ -246,12 +265,16 @@ namespace Microsoft.Samples.Http
             {
                 List<XmlQualifiedName> methodList = new List<XmlQualifiedName>();
                 Usertype usertypefromfile = Usertype.wrongpass;
-                Message message1 = buffer.CreateMessage();// using
-                Message message2 = buffer.CreateMessage();// using
-                XmlDictionaryReader bodyReader = message2.GetReaderAtBodyContents();
+                Message msgcopy1;// = buffer.CreateMessage();// using
+                Message msgcopy2 = buffer.CreateMessage();//
+                Message msgcopy3 = buffer.CreateMessage();//
+                XmlDictionaryReader bodyReader = msgcopy2.GetReaderAtBodyContents();                
                 XmlQualifiedName lookupQName = new XmlQualifiedName(bodyReader.LocalName, bodyReader.NamespaceURI);
 
-                message = message2;
+                //if no action header - add it during CreateMessageCopy
+                msgcopy1 = CreateMessageCopy(msgcopy3, bodyReader);
+
+                message = msgcopy1;
                 //---------------------------------------
                 foreach (MessageHeaderInfo mheadinfo in message.Headers)
                 {
@@ -330,7 +353,7 @@ namespace Microsoft.Samples.Http
                                                     string tmpstring = methodname.Namespace + "/" + methodname.Name;
                                                     if (methodname == lookupQName)
                                                     {
-                                                        message = message1;
+                                                        message = msgcopy1;
                                                         return methodname.Name;
                                                     }
                                                 }
@@ -343,7 +366,7 @@ namespace Microsoft.Samples.Http
                                             
                                         }
                                     }
-                                    message = message1;
+                                    message = msgcopy1;
                                     return defaultOperationName;
 
                                     #endregion get allowed methods list
@@ -351,7 +374,7 @@ namespace Microsoft.Samples.Http
                                 else
                                 {
                                     Console.WriteLine("Invalid password!");
-                                    message = message1;
+                                    message = msgcopy1;
                                     return defaultOperationName;
                                 }
 
@@ -370,7 +393,6 @@ namespace Microsoft.Samples.Http
                     }
                     //if security header doesnt exists
                     //check anon user branch for called method
-                    //
                     else
                     {
                         //case if no security header
@@ -385,7 +407,7 @@ namespace Microsoft.Samples.Http
                                 //   else defaultOpertionname
                                 if (methodname == lookupQName)
                                 {
-                                    message = message1;
+                                    message = msgcopy1;
                                     return methodname.Name;
                                 }
                             }
@@ -394,12 +416,12 @@ namespace Microsoft.Samples.Http
                         {
                             throw ane;
                         }
-                        message = message1;
+                        message = msgcopy1;
                         return defaultOperationName;
                     }
                     #endregion check security header
                 }
-                message = message1;
+                message = msgcopy1;
                 return defaultOperationName;
             }
         }
